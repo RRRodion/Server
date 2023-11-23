@@ -1,7 +1,3 @@
-const mysql = require('mysql');
-const jwt = require('jsonwebtoken');
-const cors = require('cors');
-
 const {Sequelize} = require("sequelize");
 
  module.exports=new Sequelize(
