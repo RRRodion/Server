@@ -1,9 +1,9 @@
 const ApiError = require('../error/ApiError')
 const bcrypt = require('bcryptjs')
-const jwt =require('jsonwebtoken')
+const jwt = require('jsonwebtoken')
 const {User, Theme} = require('../models/models')
 
-const generateJwt = (id,username,role)=>{
+const generateJwt = (id, username, role) => {
     return jwt.sign({id, username, role},
         process.env.SECRET_KEY,
         {expiresIn: '24h'}
@@ -11,54 +11,63 @@ const generateJwt = (id,username,role)=>{
 }
 
 class UserController {
-    async registration(req,res, next){
-        const{username, password, role, theme, language} = req.body
-        if(!username || !password){
-            return next(ApiError.badRequest("Некорректный username или password"))
+    async registration(req, res, next) {
+        const {username, password, role, theme, language} = req.body
+        if (!username || !password) {
+            return next(ApiError.badRequest('Некорректный username или password'))
         }
+
         const candidate = await User.findOne({where: {username}})
-        if(candidate){
-            return next(ApiError.badRequest("Пользователь с таким username уже существует"))
+        if (candidate) {
+            return next(ApiError.badRequest('Пользователь с таким username уже существует'))
         }
+
         const hashPassword = await bcrypt.hash(password, 5)
-        const user = await User.create({username, password:hashPassword, role, theme, language})
+        const user = await User.create({username, password: hashPassword, role, theme, language})
         const token = generateJwt(user.id, user.username, user.role)
         return res.json({token})
     }
 
-    async login(req,res,next){
-        const {username,password}=req.body
+    async login(req, res, next) {
+        const {username, password} = req.body
         const user = await User.findOne({where: {username}})
-        if(!user){
+        if (!user) {
             return next(ApiError.internal('Пользователь не найден'))
         }
+
         let comparePassword = bcrypt.compareSync(password, user.password)
-        if(!comparePassword){
+        if (!comparePassword) {
             return next(ApiError.internal('Указан неверный пароль'))
         }
-        const token = generateJwt(user.id,user.username,user.role)
-            return res.json({token})
+
+        const token = generateJwt(user.id, user.username, user.role)
+        return res.json({token})
     }
 
-    async check(req,res, next){
+    async check(req, res, next) {
         const token = generateJwt(req.id, res.user.username, req.user.role)
         return res.json({token})
     }
 
-    async getAll(req, res){
+    async getAll(req, res) {
         const user = await User.findAll()
         return res.json(user)
     }
 
-    async deleteById(req, res){
-            const { id } = req.body;
-            const deletedUserCount = await User.destroy({
-                where: { id },
-            });
-            if (deletedUserCount === 0) {
-                return res.status(404).json({ message: 'Пользователь с указанным идентификатором не найден' });
+    async deleteById(req, res, next) {
+        const userId = req.params.id;
+        try {
+            const user = await User.findByPk(userId);
+            if (!user) {
+                return next(ApiError.badRequest('Пользователь не найден'))
             }
-            return res.json({ message: 'Пользователь успешно удален' });
+
+            await user.destroy()
+            return res.status(204).send()
+        } catch (error) {
+            console.error(error);
+            return next(ApiError.internal('Внутренняя ошибка сервера'))
+        }
     }
 }
 

@@ -1,30 +1,37 @@
-const {Theme, User} = require('../models/models')
 const ApiError = require('../error/ApiError')
+const {Theme, User, Item} = require('../models/models')
+
 class themeController {
-    async create(req,res){
-        const {title} = req.body;
-        const theme = await Theme.create({title});
+    async create(req, res) {
+        const {title} = req.body
+        const theme = await Theme.create({title})
         return res.json(theme)
     }
-    async getAll(req,res){
+
+    async getAll(req, res) {
         const theme = await Theme.findAll()
         return res.json(theme)
     }
-    async delete(req,res){
-        const { id } = req.body;
-        const deletedThemeCount = await Theme.destroy({
-            where: { id },
-        });
-        if (deletedThemeCount === 0) {
-            return res.status(404).json({ message: 'Пользователь с указанным идентификатором не найден' });
+
+    async deleteById(req, res, next) {
+        const themeId = req.params.id
+        try {
+            const theme = await Theme.findByPk(themeId)
+            if (!theme) {
+                return next(ApiError.badRequest('Тема не найдена'))
+            }
+
+            await theme.destroy()
+            return res.status(204).send()
+        } catch (error) {
+            console.error(error)
+            return next(ApiError.internal('Внутренняя ошибка сервера'))
         }
-        return res.json({ message: 'Пользователь успешно удален' });
     }
-    async getOne(req,res){
+
+    async getOne(req, res) {
         const {id} = req.params
-        const theme = await Theme.findOne(
-            {where: {id}}
-        )
+        const theme = await Theme.findOne({where: {id}})
         return res.json(theme)
     }
 }

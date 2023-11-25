@@ -135,24 +135,26 @@ const Comment = sequelize.define('Comment', {
 });
 
 // Define associations between models
-User.hasMany(Collection, { foreignKey: 'user_id' });
-Collection.belongsTo(User, { foreignKey: 'user_id' });
+User.hasMany(Collection, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+Collection.belongsTo(User, { foreignKey: 'user_id'});
 
-Theme.hasMany(Collection, { foreignKey: 'theme_id' });
-Collection.belongsTo(Theme, { foreignKey: 'theme_id' });
+Theme.hasMany(Collection, { foreignKey: 'theme_id', onDelete: 'CASCADE' });
+Collection.belongsTo(Theme, { foreignKey: 'theme_id'});
 
-User.hasMany(Likes);
-Likes.belongsTo(User);
+Collection.hasMany(Item, { foreignKey: 'collection_id', onDelete: 'CASCADE' });
+Item.belongsTo(Collection, { foreignKey: 'collection_id'});
 
-Item.hasMany(Likes);
-Likes.belongsTo(Item);
+User.hasMany(Likes, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+Likes.belongsTo(User, { foreignKey: 'user_id'});
 
-User.hasMany(Comment);
-Comment.belongsTo(User);
+Item.hasMany(Likes, { foreignKey: 'item_id', onDelete: 'CASCADE' });
+Likes.belongsTo(Item, { foreignKey: 'item_id'});
 
-Item.hasMany(Comment);
-Comment.belongsTo(Item);
+User.hasMany(Comment, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+Comment.belongsTo(User, { foreignKey: 'user_id'});
 
+Item.hasMany(Comment, { foreignKey: 'item_id', onDelete: 'CASCADE' });
+Comment.belongsTo(Item, { foreignKey: 'item_id'});
 
 module.exports = {
     sequelize,

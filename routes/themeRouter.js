@@ -5,6 +5,6 @@ const themeController = require('../controllers/themeController')
 router.post('/', themeController.create)
 router.get('/', themeController.getAll)
 router.get('/:id', themeController.getOne)
-router.delete('/:id',themeController.delete)
+router.delete('/:id',themeController.deleteById)
 
 module.exports = router
