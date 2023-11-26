@@ -1,11 +1,27 @@
 const {Collection, User, Theme, Item, Likes, Comment} = require('../models/models')
 const ApiError = require('../error/ApiError')
+const uuid = require("uuid");
+const path = require("path");
 
 class CollectionController {
-    async create(req, res) {
-        const {title, description, image_url, user_id, theme_id} = req.body
-        const collections = await Collection.create({title, description, image_url, user_id, theme_id})
-        return res.json(collections)
+    async create(req, res, next) {
+        try {
+            let {title, description, optional_params, user_id, theme_id} = req.body
+            const {image_url} = req.files
+            let fileName = uuid.v4() + ".jpg"
+            await image_url.mv(path.resolve(__dirname, '..', 'static', fileName))
+            const collection = await Collection.create({
+                title,
+                description,
+                image_url: fileName,
+                optional_params,
+                user_id,
+                theme_id
+            })
+            return res.json(collection)
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
+        }
     }
 
     async getAll(req, res) {
