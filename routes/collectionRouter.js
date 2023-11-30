@@ -6,5 +6,6 @@ router.post('/', collectionController.create)
 router.get('/', collectionController.getAll)
 router.get('/:id', collectionController.getOne)
 router.delete('/:id',collectionController.deleteById)
+router.get('/theme/:theme_id',collectionController.getByTheme)
 
 module.exports = router

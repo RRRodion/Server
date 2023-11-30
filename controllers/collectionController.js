@@ -1,27 +1,11 @@
 const {Collection, User, Theme, Item, Likes, Comment} = require('../models/models')
 const ApiError = require('../error/ApiError')
-const uuid = require("uuid");
-const path = require("path");
 
 class CollectionController {
-    async create(req, res, next) {
-        try {
-            let {title, description, optional_params, user_id, theme_id} = req.body
-            const {image_url} = req.files
-            let fileName = uuid.v4() + ".jpg"
-            await image_url.mv(path.resolve(__dirname, '..', 'static', fileName))
-            const collection = await Collection.create({
-                title,
-                description,
-                image_url: fileName,
-                optional_params,
-                user_id,
-                theme_id
-            })
-            return res.json(collection)
-        } catch (e) {
-            next(ApiError.badRequest(e.message))
-        }
+    async create(req, res) {
+        const newCollection = req.body
+        const collections = await Collection.create(newCollection)
+        return res.json(collections)
     }
 
     async getAll(req, res) {
@@ -47,6 +31,21 @@ class CollectionController {
 
             if (!collection) {
                 return next(ApiError.badRequest(`Коллекция с id ${id} не найдена`))
+            }
+            return res.json(collection);
+        } catch (error) {
+            console.error(error);
+            return next(ApiError.internal(`Внутренняя ошибка сервера`))
+        }
+    }
+    async getByTheme(req, res, next) {
+        try {
+            const {theme_id} = req.params;
+
+            const collection = await Collection.findAll({where: {theme_id: theme_id}})
+
+            if (!collection) {
+                return next(ApiError.badRequest(`Коллекция с id ${theme_id} не найдена`))
             }
             return res.json(collection);
         } catch (error) {
